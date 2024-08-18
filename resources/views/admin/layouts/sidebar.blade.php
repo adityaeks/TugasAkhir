@@ -5,14 +5,12 @@
             <li class="dropdown active">
                 <a href="{{ route('admin.dashbaord') }}" class="nav-link"><i
                         class="fas fa-fire"></i><span>Dashboard</span></a>
-
             </li>
             <li class="menu-header">Ecommerce</li>
-            {{-- <li class="{{ setActive(['admin.vendor-profile.index']) }}"><a class="nav-link"
-                    href="{{ route('admin.vendor-profile.index') }}"><i class="fas fa-columns"></i>
-                    <span>Profil Admin Shop</span></a>
-            </li> --}}
-
+            <li class="{{ setActive(['home']) }}"><a class="nav-link"
+                    href="{{ url('/') }}"><i class="fa fa-home"></i>
+                    <span>Home</span></a>
+            </li>
             <li
                 class="dropdown {{ setActive(['admin.kategori.*', 'admin.sub-kategori.*', 'admin.child-kategori.*']) }}">
                 <a href="#" class="nav-link has-dropdown" data-toggle="dropdown"><i class="fas fa-list"></i>
@@ -63,21 +61,6 @@
                             href="{{ route('admin.pending-orders') }}">All Pending Orders</a></li>
                     <li class="{{ setActive(['admin.processed-orders']) }}"><a class="nav-link"
                             href="{{ route('admin.processed-orders') }}">All processed Orders</a></li>
-                    {{-- <li class="{{ setActive(['admin.dropped-off']) }}"><a class="nav-link"
-                            href="{{ route('admin.dropped-off-orders') }}">All Dropped Off Orders</a></li>
-
-                    <li class="{{ setActive(['admin.shipped-orders']) }}"><a class="nav-link"
-                            href="{{ route('admin.shipped-orders') }}">All Shipped Orders</a></li>
-                    <li class="{{ setActive(['admin.out-for-delivery-orders']) }}"><a class="nav-link"
-                            href="{{ route('admin.out-for-delivery-orders') }}">All Out For Delivery Orders</a></li> --}}
-
-
-                    {{-- <li class="{{ setActive(['admin.delivered-orders']) }}"><a class="nav-link"
-                            href="{{ route('admin.delivered-orders') }}">All Delivered Orders</a></li> --}}
-
-                    {{-- <li class="{{ setActive(['admin.canceled-orders']) }}"><a class="nav-link"
-                            href="{{ route('admin.canceled-orders') }}">All Canceled Orders</a></li> --}}
-
                 </ul>
             </li>
 
@@ -88,9 +71,9 @@
             <li
                 class="dropdown {{ setActive([
                     'admin.slider.*',
-                    'admin.vendor-condition.index',
                     'admin.about.index',
                     'admin.kupon.*',
+                    'admin.home-page-setting.*',
                     'admin.terms-and-conditions.index',
                 ]) }}">
                 <a href="#" class="nav-link has-dropdown" data-toggle="dropdown"><i class="fas fa-cog"></i>
@@ -100,13 +83,10 @@
                             href="{{ route('admin.slider.index') }}">Slider</a></li>
                     <li class="{{ setActive(['admin.kupon.*']) }}"><a class="nav-link"
                             href="{{ route('admin.kupon.index') }}">Kupon</a></li>
-                    <li class="{{ setActive(['admin.slider.*']) }}"><a class="nav-link"
+                    <li class="{{ setActive(['admin.home-page-setting.*']) }}"><a class="nav-link"
                             href="{{ route('admin.home-page-setting') }}">Home Page Setting</a></li>
-
-                    <li class="{{ setActive(['admin.about.index']) }}"><a class="nav-link"
-                            href="{{ route('admin.about.index') }}">About page</a></li>
-
-
+                    {{-- <li class="{{ setActive(['admin.about.index']) }}"><a class="nav-link"
+                            href="{{ route('admin.about.index') }}">About page</a></li> --}}
                 </ul>
             </li>
 
@@ -136,9 +116,6 @@
 
                 </ul>
             </li>
-
-            {{-- <li><a class="nav-link" href="{{ route('admin.settings.index') }}"><i class="fas fa-wrench"></i>
-                    <span>Settings</span></a></li> --}}
 
         </ul>
 

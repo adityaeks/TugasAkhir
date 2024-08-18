@@ -4,7 +4,7 @@
       <!-- Main Content -->
         <section class="section">
           <div class="section-header">
-            <h1>Coupon</h1>
+            <h1>Kupon</h1>
           </div>
 
           <div class="section-body">
@@ -17,7 +17,7 @@
 
                   </div>
                   <div class="card-body">
-                    <form action="{{route('admin.coupons.update', $coupon->id)}}" method="POST">
+                    <form action="{{route('admin.kupon.update', $coupon->id)}}" method="POST">
                         @csrf
                         @method('PUT')
                         <div class="form-group">

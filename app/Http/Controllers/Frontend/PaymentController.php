@@ -32,7 +32,7 @@ class PaymentController extends Controller
         return view('frontend.pages.payment-success');
     }
 
-    public function storeOrder($paymentMethod, $paymentStatus, $transactionId)
+    public function storeOrder(Request $request)
     {
         $cartItems = \Cart::content();
         $totalWeight = 0;
@@ -81,41 +81,27 @@ class PaymentController extends Controller
             $product->save();
         }
 
-        $transaction = new Transaction();
-        $transaction->order_id = $order->id;
-        $transaction->transaction_id = $transactionId;
-        $transaction->payment_method = $paymentMethod;
-        $transaction->amount = getFinalPayableAmount();
-        $transaction->shipping_fee = $shippingFee; // Simpan biaya pengiriman
-        $transaction->courier = $courier; // Simpan kurir
-        $transaction->service = $service; // Simpan layanan
-        $transaction->save();
-
-
-    }
-
-    public function create(Request $request)
-    {
         $params = [
+            'payment_type'=> $request->channel,
             'transaction_details' => [
                 'order_id' => \Str::uuid(),
-                'gross_amount' => $request->price,
+                'gross_amount' => $request->amount,
             ],
             'item_details' => [
                 [
-                    'price' => $request->price,
+                    'price' => $request->amount,
                     'quantity' => 1,
-                    'name' => $request->item_name,
+                    'name' => $request->product_name,
                 ]
             ],
             'customer_details' => [
-                'first_name' => $request->customer_firstname,
-                'email' => $request->customer_email,
+                'first_name' => $request->user_name,
+                // 'email' => $request->customer_email,
             ],
             'enabled_payments' => ['credit_card', 'bca_va', 'bni_va', 'bri_va']
         ];
-
         $auth = base64_encode(config('midtrans.serverKey'));
+
 
         try {
             $response = Http::withHeaders([
@@ -139,22 +125,99 @@ class PaymentController extends Controller
                 return response()->json(['error' => 'Failed to retrieve redirect URL from Midtrans'], 500);
             }
 
-            $payment = new Payment;
-            $payment->order_id = $params['transaction_details']['order_id'];
-            $payment->status = 'pending';
-            $payment->price = $request->price;
-            $payment->customer_firstname = $request->customer_firstname;
-            $payment->customer_email = $request->customer_email;
-            $payment->item_name = $request->item_name;
-            $payment->checkout_link = $responseBody['redirect_url'];
-            $payment->save();
+            $transaction = new Transaction();
+            $transaction->order_id = $params['transaction_details']['order_id'];
+            $transaction->status = 'pending';
+            // $transaction->transaction_id = $transactionId;
+            $transaction->user_name = $request->name;
+            $transaction->payment_method = 'midtrans';
+            $transaction->product_name = $request->name;
+            $transaction->amount = $request->amount;
+            $transaction->checkout_link = $responseBody['redirect_url'];
+            $transaction->courier = $courier; // Simpan kurir
+            $transaction->service = $service; // Simpan layanan
+            $transaction->save();
 
             return response()->json($responseBody);
         } catch (\Exception $e) {
             \Log::error('Error communicating with Midtrans API', ['exception' => $e]);
             return response()->json(['error' => 'Failed to communicate with Midtrans API', 'message' => $e->getMessage()], 500);
         }
+
+
     }
+
+    // public function create(Request $request)
+    // {
+    //     $params = [
+    //         'transaction_details' => [
+    //             'order_id' => \Str::uuid(),
+    //             'gross_amount' => $request->price,
+    //         ],
+    //         'item_details' => [
+    //             [
+    //                 'price' => $request->price,
+    //                 'quantity' => 1,
+    //                 'name' => $request->item_name,
+    //             ]
+    //         ],
+    //         'customer_details' => [
+    //             'first_name' => $request->customer_firstname,
+    //             'email' => $request->customer_email,
+    //         ],
+    //         'enabled_payments' => ['credit_card', 'bca_va', 'bni_va', 'bri_va']
+    //     ];
+
+    //     $auth = base64_encode(config('midtrans.serverKey'));
+
+    //     try {
+    //         $response = Http::withHeaders([
+    //             'Content-Type' => 'application/json',
+    //             'Authorization' => "Basic $auth",
+    //         ])->withOptions([
+    //             'verify' => false, // Abaikan SSL certificate
+    //         ])->post('https://app.sandbox.midtrans.com/snap/v1/transactions', $params);
+
+    //         $responseBody = $response->json();
+
+    //         \Log::info('Midtrans Response', ['response' => $responseBody]);
+
+    //         if (!$response->successful()) {
+    //             \Log::error('Midtrans API call failed', ['response' => $responseBody]);
+    //             return response()->json(['error' => 'Failed to communicate with Midtrans API'], 500);
+    //         }
+
+    //         if (!isset($responseBody['redirect_url'])) {
+    //             \Log::error('Redirect URL not found in Midtrans response', ['response' => $responseBody]);
+    //             return response()->json(['error' => 'Failed to retrieve redirect URL from Midtrans'], 500);
+    //         }
+
+    //         $payment = new Payment;
+    //         $payment->order_id = $params['transaction_details']['order_id'];
+    //         $payment->status = 'pending';
+    //         $payment->price = $request->price;
+    //         $payment->customer_firstname = $request->customer_firstname;
+    //         $payment->customer_email = $request->customer_email;
+    //         $payment->item_name = $request->item_name;
+    //         $payment->checkout_link = $responseBody['redirect_url'];
+    //         $payment->save();
+
+    //         $transaction = new Transaction();
+    //         $transaction->order_id = $order->id;
+    //         $transaction->transaction_id = $transactionId;
+    //         $transaction->payment_method = $paymentMethod;
+    //         $transaction->amount = getFinalPayableAmount();
+    //         $transaction->shipping_fee = $shippingFee; // Simpan biaya pengiriman
+    //         $transaction->courier = $courier; // Simpan kurir
+    //         $transaction->service = $service; // Simpan layanan
+    //         $transaction->save();
+
+    //         return response()->json($responseBody);
+    //     } catch (\Exception $e) {
+    //         \Log::error('Error communicating with Midtrans API', ['exception' => $e]);
+    //         return response()->json(['error' => 'Failed to communicate with Midtrans API', 'message' => $e->getMessage()], 500);
+    //     }
+    // }
     public function webhook(Request $request)
 {
     $auth = base64_encode(config('midtrans.serverKey'));
@@ -179,7 +242,7 @@ class PaymentController extends Controller
             return response()->json(['error' => 'Invalid response format from Midtrans API'], 500);
         }
 
-        $payment = Payment::where('order_id', $request->order_id)->firstOrFail();
+        $payment = Transaction::where('order_id', $request->order_id)->firstOrFail();
 
         // Pastikan status pembayaran hanya diubah jika belum di-settlement atau capture
         if ($payment->status === 'settlement' || $payment->status === 'capture') {

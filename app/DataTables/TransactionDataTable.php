@@ -23,23 +23,24 @@ class TransactionDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', 'transaction.action')
-            ->addColumn('invoice_id', function($query){
-                return '#'.$query->order->invocie_id;
+            ->addColumn('invoice_id', function($query) {
+                return $query->order ? '#' . $query->order->invoice_id : '-';
             })
-            ->addColumn('amount_in_base_currency', function($query){
+            ->addColumn('order_id', function($query){
+                return $query->order_id ? $query->order_id : '-';
+            })
+            ->addColumn('Total Harga', function($query){
                 $amount = number_format($query->amount, 0, ',', '.'); // Memformat menjadi Rupiah
-                return 'IDR ' . $amount . ' ' . $query->order->currency_name;
+                return 'Rp. ' . $amount;
             })
-
-            ->addColumn('amount_in_real_currency', function($query){
-                return $query->amount_real_currency.' '.$query->amount_real_currency_name;
+            ->addColumn('Status Pembayaran', function($query){
+                return $query->status ? $query->status : '-';
             })
             ->filterColumn('invoice_id', function($query, $keyword){
                 $query->whereHas('order', function($query) use ($keyword){
-                    $query->where('invocie_id', 'like', "%$keyword%");
+                    $query->where('order_id', 'like', "%$keyword%");
                 });
             })
-
             ->setRowId('id');
     }
 
@@ -48,8 +49,9 @@ class TransactionDataTable extends DataTable
      */
     public function query(Transaction $model): QueryBuilder
     {
-        return $model->newQuery();
+        return $model->newQuery()->with('order');
     }
+
 
     /**
      * Optional method if you want to use the html builder.
@@ -60,7 +62,6 @@ class TransactionDataTable extends DataTable
                     ->setTableId('transaction-table')
                     ->columns($this->getColumns())
                     ->minifiedAjax()
-                    //->dom('Bfrtip')
                     ->orderBy(0)
                     ->selectStyleSingle()
                     ->buttons([
@@ -70,6 +71,9 @@ class TransactionDataTable extends DataTable
                         Button::make('print'),
                         Button::make('reset'),
                         Button::make('reload')
+                    ])
+                    ->parameters([
+                        'responsive' => true,
                     ]);
     }
 
@@ -79,14 +83,13 @@ class TransactionDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-
             Column::make('id'),
             Column::make('invoice_id'),
+            Column::make('order_id'),
             Column::make('transaction_id'),
             Column::make('payment_method'),
-            Column::make('amount_in_base_currency'),
-            // Column::make('amount_in_real_currency'),
-
+            Column::make('Total Harga'),
+            Column::make('Status Pembayaran'),
         ];
     }
 

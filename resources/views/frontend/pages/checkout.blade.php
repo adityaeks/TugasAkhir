@@ -29,13 +29,11 @@
                                             </label>
                                         </div>
                                         <ul>
-                                            <li><span>Name :</span> {{ $address->name }}</li>
+                                            <li><span>Nama :</span> {{ $address->name }}</li>
                                             <li><span>Phone :</span> {{ $address->phone }}</li>
                                             <li><span>Email :</span> {{ $address->email }}</li>
-                                            <li><span>Country :</span> {{ $address->country }}</li>
-                                            <li><span>City :</span> {{ $address->city }}</li>
-                                            <li><span>Zip Code :</span> {{ $address->zip }}</li>
-                                            <li><span>Address :</span> {{ $address->address }}</li>
+                                            <li><span>Kode Pos :</span> {{ $address->zip }}</li>
+                                            <li><span>Alamat :</span> {{ $address->address }}</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -71,7 +69,7 @@
 
                         <div class="wsus__order_details_summery">
                             <p>subtotal: <span>Rp{{ number_format(getCartTotal(), 0, ',', '.') }}</span></p>
-                            <p>biaya pengiriman(+): <span id="shipping_fee">Rp{{ number_format(0, 0, ',', '.') }}</span>
+                            <p>biaya pengiriman(+): <span id="cost">Rp{{ number_format(0, 0, ',', '.') }}</span>
                             </p>
                             <p>kupon(-): <span>Rp{{ number_format(getCartDiscount(), 0, ',', '.') }}</span></p>
                             <p><b>total:</b> <span><b id="total_amount"
@@ -119,13 +117,13 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="wsus__check_single_form">
-                                            <input type="text" placeholder="Name *" name="name"
+                                            <input type="text" placeholder="Nama *" name="name"
                                                 value="{{ old('name') }}">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="wsus__check_single_form">
-                                            <input type="text" placeholder="Phone *" name="phone"
+                                            <input type="text" placeholder="No. Hp *" name="phone"
                                                 value="{{ old('phone') }}">
                                         </div>
                                     </div>
@@ -135,40 +133,33 @@
                                                 value="{{ old('email') }}">
                                         </div>
                                     </div>
-
                                     <div class="col-md-6">
                                         <div class="wsus__check_single_form">
-                                            <select class="select_2" name="country">
-                                                <option value="">Country / Region *</option>
-                                                @foreach (config('settings.country_list') as $key => $county)
-                                                    <option {{ $county === old('country') ? 'selected' : '' }}
-                                                        value="{{ $county }}">{{ $county }}</option>
+                                            <select id="province" class="select_2" name="province">
+                                                <option value="">Select Province</option>
+                                                @foreach ($provinces['rajaongkir']['results'] as $province)
+                                                    <option value="{{ $province['province_id'] }}">
+                                                        {{ $province['province'] }}</option>
                                                 @endforeach
-
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="wsus__check_single_form">
-                                            <input type="text" placeholder="State *" name="state"
-                                                value="{{ old('state') }}">
+                                            <select id="city" class="select_2" name="city">
+                                                <option value="">Select City</option>
+                                            </select>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="wsus__check_single_form">
-                                            <input type="text" placeholder="City *" name="city"
-                                                value="{{ old('city') }}">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="wsus__check_single_form">
-                                            <input type="text" placeholder="Post code *" name="zip"
+                                            <input type="text" placeholder="Kode Pos *" name="zip"
                                                 value="{{ old('zip') }}">
                                         </div>
                                     </div>
                                     <div class="col-md-12">
                                         <div class="wsus__check_single_form">
-                                            <input type="text" placeholder="Address *" name="address"
+                                            <input type="text" placeholder="Alamat lengkap *" name="address"
                                                 value="{{ old('address') }}">
                                         </div>
                                     </div>
@@ -200,7 +191,6 @@
                 }
             });
 
-            // JSON data for products
             var products = [{
                     "id": 1,
                     "weight": 1.5,
@@ -212,11 +202,10 @@
                     "weight": 2.0,
                     "price": 15000,
                     "qty": 1
-                },
+                }
                 // Tambahkan data produk lainnya di sini
             ];
 
-            // Menghitung total berat produk dari JSON
             function calculateTotalWeight() {
                 let totalWeight = 0;
                 products.forEach(function(product) {
@@ -225,7 +214,6 @@
                 return totalWeight;
             }
 
-            // Menghitung total qty dari JSON
             function calculateTotalQty() {
                 let totalQty = 0;
                 products.forEach(function(product) {
@@ -234,7 +222,6 @@
                 return totalQty;
             }
 
-            // Menghitung total harga dari JSON
             function calculateTotalPrice() {
                 let totalPrice = 0;
                 products.forEach(function(product) {
@@ -262,7 +249,6 @@
 
                 $('#shipping_method_id').val($(this).val());
                 $('#shipping_fee').text("Rp" + shippingFee.toLocaleString());
-
                 $('#total_amount').text("Rp" + totalAmount.toLocaleString());
             });
 
@@ -274,13 +260,10 @@
                 $('#delivery_package').val($(this).val());
             });
 
-            $('.courier-code').on('click', function() {
-                $('#delivery_package').val($(this).val());
-            });
+            $('#submitCheckoutForm').off('click').on('click', function(e) {
+                e.preventDefault(); // Prevent default action
+                console.log('Submit button clicked'); // Log for debugging
 
-            // submit checkout form
-            $('#submitCheckoutForm').on('click', function(e) {
-                e.preventDefault();
                 if ($('#shipping_address_id').val() == "") {
                     toastr.error('Shipping address is required');
                 } else if ($('#delivery_package').val() == "") {
@@ -288,43 +271,47 @@
                 } else if (!$('.agree_term').prop('checked')) {
                     toastr.error('You have to agree to the website terms and conditions');
                 } else {
-                    // Mendapatkan token
-                    var token = '{{ csrf_token() }}'; // Ini mendapatkan token dari Laravel
-
-                    // Mengambil nilai total_qty dan total_price dari form
+                    var token = $('meta[name="csrf-token"]').attr('content');
                     var totalQty = $('#total_qty').val();
                     var totalPrice = $('#total_price').val();
 
-                    // Mengirim data dengan tambahan token, total_qty, dan total_price
+                    console.log('Sending AJAX request'); // Log for debugging
+
+                    // Disable the button to prevent multiple submits
+                    $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin fa-1x"></i>');
+
                     $.ajax({
                         url: "{{ route('user.checkout.form-submit') }}",
                         method: 'POST',
                         data: {
                             _token: token,
                             shipping_address_id: $('#shipping_address_id').val(),
-                            delivery_service: $('#delivery_service').val(),
                             delivery_package: $('#delivery_package').val(),
                             total_qty: totalQty,
                             total_price: totalPrice
                         },
-                        beforeSend: function() {
-                            $('#submitCheckoutForm').html(
-                                '<i class="fas fa-spinner fa-spin fa-1x"></i>');
-                        },
                         success: function(data) {
-                            if (data.status === 'success') {
-                                $('#submitCheckoutForm').text('Place Order');
-                                // redirect user to next page
-                                window.location.href = data.redirect_url;
+                            console.log(data);
+                            if (data.redirect_url) {
+                                console.log('AJAX request successful');
+                                window.location.href = data
+                                    .redirect_url; // Redirect to Snap Midtrans
+                            } else {
+                                toastr.error('Failed to get redirect URL from server');
                             }
                         },
                         error: function(data) {
-                            console.log(data);
+                            console.log('AJAX request failed:', data); // Log for debugging
+                            toastr.error('Failed to process the checkout. Please try again.');
+                        },
+                        complete: function() {
+                            // Re-enable the button after request completes
+                            $('#submitCheckoutForm').prop('disabled', false).html(
+                                'Place Order');
                         }
                     });
                 }
             });
-
 
             $('.delivery_address').change(function() {
                 $('.courier-code').removeAttr('checked');
@@ -335,7 +322,9 @@
                 let courier = $(this).val();
                 $('#delivery_service').val($(this).val());
                 let addressID = $('.delivery_address:checked').val();
-                let totalWeight = calculateTotalWeight(); // Mengambil total berat produk dari JSON
+                let totalWeight = calculateTotalWeight();
+
+                console.log('Fetching shipping fee'); // Log for debugging
 
                 $.ajax({
                     url: "checkout/shipping-fee",
@@ -343,19 +332,17 @@
                     data: {
                         address_id: addressID,
                         courier: courier,
-                        total_weight: totalWeight, // Kirim total berat produk dari JSON
+                        total_weight: totalWeight,
                         _token: $('meta[name="csrf-token"]').attr('content')
                     },
                     success: function(result) {
                         $('.available-services').show();
                         $('.available-services').html(result);
 
-                        // Update shipping fee display
                         if (result.hasOwnProperty('shipping_fee')) {
                             let shippingFee = parseInt(result.shipping_fee);
                             $('#shipping_fee').text("Rp" + shippingFee.toLocaleString());
 
-                            // Update grand total display
                             let currentTotalAmount = parseInt($('#total_amount').data('id'));
                             let totalAmount = currentTotalAmount + shippingFee;
                             $('#total_amount').text("Rp" + totalAmount.toLocaleString());
@@ -369,19 +356,44 @@
                 });
             });
 
-            // Memanggil fungsi untuk menghitung dan menampilkan total berat pada halaman checkout
+
             function displayTotalWeight() {
                 let totalWeight = calculateTotalWeight();
-                $('#cart-total-weight').text(totalWeight + ' grams'); // Menampilkan total berat produk
-                console.log('Total Weight:', totalWeight); // Log total berat produk untuk debugging
-
-                // Di sini Anda dapat memproses total berat produk sesuai kebutuhan, misalnya untuk menghitung biaya pengiriman atau menyimpan dalam formulir checkout
-                // Contoh: $('#total_weight_field').val(totalWeight);
+                $('#cart-total-weight').text(totalWeight + ' grams');
+                console.log('Total Weight:', totalWeight);
             }
 
-            // Panggil fungsi untuk menampilkan total berat saat halaman checkout dimuat
+            $(document).ready(function() {
+                $('#province').change(function() {
+                    var provinceId = $(this).val();
+                    if (provinceId) {
+                        $.ajax({
+                            url: 'checkout/cities/' + provinceId,
+                            type: 'GET',
+                            dataType: 'json',
+                            success: function(data) {
+                                $('#city').empty();
+                                $('#city').append(
+                                    '<option value="">Select City</option>');
+                                $.each(data, function(key, value) {
+                                    $('#city').append('<option value="' + value
+                                        .city_id + '">' + value.city_name +
+                                        '</option>');
+                                });
+                            },
+                            error: function(xhr, status, error) {
+                                console.log('Error: ' + error);
+                            }
+                        });
+                    } else {
+                        $('#city').empty();
+                        $('#city').append('<option value="">Select City</option>');
+                    }
+                });
+            });
+
             displayTotalWeight();
-            updateFormValues(); // Panggil untuk mengupdate total qty dan total price
+            updateFormValues();
         });
     </script>
 @endpush
